@@ -6,19 +6,41 @@ const $ = cheerio.load(html)
 
 let csv = "";
 let tournoi = "";
+let caption = "";
+let ville = "";
+let date = "";
+let handicap = "";
+let levelav = "";
+let levelap = "";
 
 $('table').each(function(i, table) {
-  tournoi = "Tournoi #" + (i + 1);
-  csv += "\n" + tournoi;
+
+  /*
+  <caption>(Rennes,
+  19-01-2019)
+  &nbsp;&nbsp;niveau d'inscription :  7K (avant : -617, apr&egrave;s : -602)</caption>
+  */
+
+  caption = $(table).find('caption').text();
+  cap = caption.match(/^\((.*)\,\n(.*)\)\n.*:(.*)\(.*:(.*),.*:(.*)\)$/);
+  if (cap) {
+    ville = cap[1];
+    date = cap[2];
+    handicap = cap[3].trim();
+    levelav = cap[4].trim();
+    levelap = cap[5].trim();
+    tournoi = date + ";" + ville + ";" + handicap + ";" + levelav + ";" + levelap + ";";
+  }
 
   $(table).find('tr').each(function(j, tr) {
-    csv += $(tr).find('h4').text();
+    csv_ligne = "";
 
     $(tr).find('td').each(function(k, td) {
-      csv += $(td).text() + " ; ";
+      csv_ligne += $(td).text() + ";";
     });
-
-    csv += "\n";
+    if (csv_ligne) {
+      csv += tournoi + csv_ligne.slice(0, -1) + "\n";
+    }
   });
 });
 
